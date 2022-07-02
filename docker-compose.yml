@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  wordpress:
+    image: vangoda/wordpress-dev:0.3
+    container_name: test.local
+    environment:
+      - VIRTUAL_HOST=test.local
+      - WORDPRESS_DB_HOST=db
+      - WORDPRESS_DB_NAME=test
+      - WORDPRESS_DB_USER=test
+      - WORDPRESS_DB_PASSWORD=test
+    networks:
+      - nginx-proxy
+    volumes:
+      - ./config-custom/nginx.conf:/etc/nginx/nginx.conf
+      - ./config-custom/docker-php-ext-xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      - ./config-custom/php.ini:/usr/local/etc/php/conf.d/php.ini
+
+  db:
+    image: mysql
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "vs+:CYZ3GB>VqaXd"
+    networks:
+      - nginx-proxy
+
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - "8080:80"
+    networks:
+      - nginx-proxy
+    environment:
+      - PMA_ABSOLUTE_URI=pma.localhost
+      - VIRTUAL_HOST=pma.localhost
+      - UPLOAD_LIMIT=100M
+      - HIDE_PHP_VERSION=true
+
+volumes:
+  lido:
+  db:
+
+networks:
+  nginx-proxy:
+    external: true
