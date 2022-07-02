@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   wordpress:
-    image: vangoda/wordpress-dev:0.3
+    image: vangoda/wordpress-dev:1.0
     container_name: test.local
     environment:
       - VIRTUAL_HOST=test.local
