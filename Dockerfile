@@ -30,3 +30,6 @@ RUN chown www-data:www-data wp-config.php
 # Generate WP salts via WP CLI
 USER www-data
 RUN php wp-cli.phar config shuffle-salts
+
+# Install NPM
+RUN apk add --no-cache npm
