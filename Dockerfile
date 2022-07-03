@@ -26,10 +26,11 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 COPY ./wp-config.php ./wp-config.php
 USER root
 RUN chown www-data:www-data wp-config.php
+# Install NPM, gulp
+USER root
+RUN apk add --no-cache npm \
+&& npm i -g gulp
 
 # Generate WP salts via WP CLI
 USER www-data
 RUN php wp-cli.phar config shuffle-salts
-
-# Install NPM
-RUN apk add --no-cache npm
