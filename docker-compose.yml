@@ -16,14 +16,13 @@ services:
       - VIRTUAL_HOST=test.local
       - WORDPRESS_DB_HOST=db
       - WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME}
-      - WORDPRESS_DB_USER{WORDPRESS_DB_USER}
+      - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
       - WORDPRESS_DB_PASSWORD={WORDPRESS_DB_PASSWORD}
     networks:
       - nginx-proxy
 
   db:
     image: mariadb
-    # command: --max_allowed_packet=67108864
     volumes:
       - db:/var/lib/mysql
       - ./current.sql:/current.sql
