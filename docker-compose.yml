@@ -29,7 +29,7 @@ services:
       - ./current.sql:/current.sql
       - ./config-custom/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
     environment:
-      MARIADB_ROOT_PASSWORD: {MARIADB_ROOT_PASSWORD}
+      MARIADB_ROOT_PASSWORD: {MYSQL_ROOT_PASS}
     networks:
       - nginx-proxy
 
