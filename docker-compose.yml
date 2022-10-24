@@ -28,7 +28,7 @@ services:
       - ./current.sql:/current.sql
       - ./config-custom/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
     environment:
-      MARIADB_ROOT_PASSWORD: {MYSQL_ROOT_PASS}
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASS}
     networks:
       - nginx-proxy
 
@@ -46,7 +46,7 @@ services:
       - proxy_read_timeout=1500
 
 volumes:
-  h2oclub:
+  test:
   vscode:
   db:
 
