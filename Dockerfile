@@ -1,53 +1,36 @@
-# Start from PHP 7.4 ALpine Image
-FROM php:7.4-alpine
+# Base PHP FPM image for development
+FROM vangoda/php-fpm-alpine
 
-# Add mlocatis php extension installer
-ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+WORKDIR /var/www/html
 
-# Copy default apache configuration
-# COPY apache2 conf
-COPY ./apache/apache2.conf /etc/apache2/apache2.conf
-COPY ./apache/default/ /etc/apache2/sites-available
+# # Enable ENV variables in PHP for wordpress config
+# USER root
+# RUN sed -i 's/[;clear_env = no]/[clear_env = no]/' /usr/local/etc/php-fpm.d/www.conf \
+#   && echo -e "\nenv[WORDPRESS_DB_HOST] = $WORDPRESS_DB_HOST" >> /usr/local/etc/php-fpm.d/www.conf \
+#   && echo -e "\nenv[WORDPRESS_DB_NAME] = $WORDPRESS_DB_NAME" >> /usr/local/etc/php-fpm.d/www.conf \
+#   && echo -e "\nenv[WORDPRESS_DB_USER] = $WORDPRESS_DB_USER" >> /usr/local/etc/php-fpm.d/www.conf \
+#   && echo -e "\nenv[WORDPRESS_DB_PASSWORD] = $WORDPRESS_DB_PASSWORD" >> /usr/local/etc/php-fpm.d/www.conf
 
-# Set workdir
-WORKDIR "/var/www/html"
-
-# Make it executable
-RUN chmod +x /usr/local/bin/install-php-extensions\
-# PHP extensions and composer using mlocati/docker-php-extension-installer
-  && install-php-extensions xdebug pdo_mysql @composer\
-# Set folder permissions
-  && chown www-data:www-data . -R\
-  && chmod 775 . -R\
-# Install git, nodejs, postfix, curl and npm
-  && apk update\
-  && apk add git nodejs npm postfix curl\
-  && npm install gulp -g\
-  && npm install gulp --save-dev\
-#   Configure xdebug
-  && { \
-    echo "xdebug.mode=debug,profile,trace"; \
-    echo "xdebug.client_host=127.0.0.1"; \
-    echo "xdebug.client_port=9003"; \
-  } > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-  
-
-# Get latest wordpress
+# # Install latest wordpress
+USER www-data
 RUN curl -O https://wordpress.org/latest.tar.gz \
   && tar xvzf latest.tar.gz \
   && mv wordpress/* ./ \
-  && rm ./latest.tar.gz && rm ./wordpress/ -R \
-# Configure wordpress with ENV variables that should be passed in
-# docker-compose file.
-  && echo 'PassEnv WORDPRESS_DB_HOST' >> ./.htaccess \
-  && echo 'PassEnv WORDPRESS_DB_NAME' >> ./.htaccess \
-  && echo 'PassEnv WORDPRESS_DB_USER' >> ./.htaccess \
-  && echo 'PassEnv WORDPRESS_DB_PASSWORD' >> ./.htaccess
-# Default custom wp-config.
-COPY ./wp-config.php /var/www/html/wp-config.php
+  && rm ./latest.tar.gz && rm ./wordpress/ -R
 
-# Run php interactively
-# ENTRYPOINT ["docker-php-entrypoint"]
-EXPOSE 80
-EXPOSE 443
-CMD ["php", "-a"]
+# Install wordpress CLI
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+  && chmod +x wp-cli.phar
+
+# Configure wordpress
+COPY ./wp-config.php ./wp-config.php
+USER root
+RUN chown www-data:www-data wp-config.php
+# Install NPM, gulp
+USER root
+RUN apk add --no-cache npm \
+&& npm i -g gulp
+
+# Generate WP salts via WP CLI
+USER www-data
+RUN php wp-cli.phar config shuffle-salts
